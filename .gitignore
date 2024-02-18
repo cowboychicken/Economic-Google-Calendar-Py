@@ -1,0 +1,23 @@
+
+
+
+# Lib 
+Lib/*
+Scripts/*
+pyvenv.cfg
+
+__pycache__/*
+
+
+
+# Credentials
+credentials.json
+credentials*
+token.json
+
+
+eco - (back up).csv
+eco2.csv
+
+
+run.sh
