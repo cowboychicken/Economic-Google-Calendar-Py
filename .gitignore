@@ -5,15 +5,16 @@ pyvenv.cfg
 
 __pycache__/*
 
+Pipfile
+Pipfile.lock
+
+
 # Credentials
-credentials.json
-credentials*
-token.json
+*credentials.json
+*credentials*
+*token.json
 
-eco2.csv
+*eco-backup.csv
 
-eco - (back up).csv
-eco-backup.csv
-*backup*
+MYREADME*
 
-run.sh
