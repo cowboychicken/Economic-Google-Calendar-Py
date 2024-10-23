@@ -1,5 +1,5 @@
 ﻿# Define the path to the Python script
-$pythonScriptPath = ".\src\economic-calendar.py"
+$pythonScriptPath = ".\src\economic_calendar.py"
 
 echo "Changing directory and running update..."
 
@@ -8,8 +8,7 @@ cd C:\Users\user\Documents\Programming_Projects\economiccalendar-py
 
 pipenv run python $pythonScriptPath
 
+echo "Update done...sleep(10)..."
 
-echo "Update done...zzz..."
-
-# Sleep for 15 seconds
-Start-Sleep -Seconds 15
+# Sleep for 10 seconds
+Start-Sleep -Seconds 10

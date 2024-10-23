@@ -84,13 +84,13 @@ def insertEventFromDict(events):
             + miltime
         )
         print(
+            "\n",
             summary,
             dateTimeString,
             dateYear,
             dateMonth,
             dateDay,
-            miltime,
-            "\n",
+            miltime
         )
         event_template = {
             "summary": summary,
@@ -110,7 +110,7 @@ def insertEventFromDict(events):
             .insert(calendarId=CALENDAR_ID, body=event_template)
             .execute()
         )
-        print("Event created: %s" % (event.get("htmlLink")))
+        print("Event created: %s" % (event.get("htmlLink")), '\n')
 
 
 if __name__ == "__main__":

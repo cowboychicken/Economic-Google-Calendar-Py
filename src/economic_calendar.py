@@ -4,8 +4,8 @@ import numpy as np
 import pandas as pd
 import pytz
 import requests
-
 import google_calendar as gcal
+import os
 
 # Constants
 URL = "https://tradingeconomics.com/united-states/calendar"
@@ -25,12 +25,14 @@ def scrape_website(url, headers):
 def parse_row(row, date):
     time = row.find("td").text.strip()
     # level = row.find('td').span['class'][0] if row.find('td').span else ""
-    level = ""
-    if row.find("td").span["class"]:
-        level = row.find("td").span["class"][0]
-    else:
-        level = ""
-
+    level = '0'
+    try:
+        if row.find("td").span["class"]:
+            # Changed 10/23/24
+            # index changed from 0 -> 1
+            level = row.find("td").span["class"][1]
+    except IndexError:
+        level = '0'
     country = row.find("td").find_next_sibling().text.strip()
     description = (
         row.find("td").find_next_sibling().find_next_sibling().text.strip()
@@ -58,7 +60,8 @@ for row in soup.find_all(["thead", "tr"], recursive=False):
 df = pd.DataFrame(
     data, columns=["date", "time", "country", "level", "summary"]
 )
-df["level"] = df.level.str.split("calendar-date-").str[-1]
+
+df["level"] = df.level.str.split("calendar-date-").str[-1].astype(int)
 df["dateYear"] = pd.to_datetime(df["date"]).dt.strftime("%Y").astype(int)
 df["dateMonth"] = pd.to_datetime(df["date"]).dt.strftime("%m").astype(int)
 df["dateDay"] = pd.to_datetime(df["date"]).dt.strftime("%d").astype(int)
@@ -84,68 +87,86 @@ df_merge = df.merge(
 df_merge = df_merge[df.columns]
 if df_merge.empty: print("No new events. CSV file is up to date.")
 else:
+    # write to csv file
     df_csv_new = pd.concat([df_csv, df_merge], ignore_index=True)
     df_csv_new.to_csv(CSV_FILE, index=False)
 
     # Query Google Calendar
+    retries = 0
+    max_retries = 1
+    success = False
     newlist = []
-    try:
-        gcal.main()
-        eventlist = gcal.getEventList()
+    while retries <= max_retries and not success:
+        try:
+            gcal.main()
+            eventlist = gcal.getEventList()
 
-        for event in eventlist:
-            summary = event["summary"]
-            date = event["start"]["dateTime"]
-            # print(date +" " + summary)
-            newlist.append([date, summary])
-    except Exception as e:
-        print("Error occurred:", e)
+            for event in eventlist:
+                summary = event["summary"]
+                date = event["start"]["dateTime"]
+                # print(date +" " + summary)
+                newlist.append([date, summary])
+            
+            # Transform Calendar events to merge with CSV contents
+            df_calendar = pd.DataFrame(
+                newlist, columns=["date", "summary"]
+            ).drop_duplicates()
+            df_calendar["newdate"] = df_calendar["date"].apply(convert_to_utc)
+            df_calendar[["dateYear", "dateMonth", "dateDay"]] = (
+                df_calendar["newdate"].dt.strftime("%Y-%m-%d").str.split("-", expand=True)
+            )
+            df_calendar[["dateYear", "dateMonth", "dateDay"]] = df_calendar[
+                ["dateYear", "dateMonth", "dateDay"]
+            ].astype(int)
+            df_calendar["incal"] = "yes"
 
-    # Transform Calendar events to merge with CSV contents
-    df_calendar = pd.DataFrame(
-        newlist, columns=["date", "summary"]
-    ).drop_duplicates()
-    df_calendar["newdate"] = df_calendar["date"].apply(convert_to_utc)
-    df_calendar[["dateYear", "dateMonth", "dateDay"]] = (
-        df_calendar["newdate"].dt.strftime("%Y-%m-%d").str.split("-", expand=True)
-    )
-    df_calendar[["dateYear", "dateMonth", "dateDay"]] = df_calendar[
-        ["dateYear", "dateMonth", "dateDay"]
-    ].astype(int)
-    df_calendar["incal"] = "yes"
+            # Filter specific events
+            query_string = 'level==3 or summary.str.contains("Initial jobless claims") or summary.str.contains("GDP Growth Rate") or summary.str.contains("CPI") or summary.str.contains("Core PCE Price Index MoM") or summary.str.contains("New Home Sales MoM")'
+            df_merge_3 = df_csv_new.query(query_string, engine="python")
+            merge4 = df_merge_3.merge(
+                df_calendar, on=["dateYear", "dateMonth", "dateDay", "summary"], how="left"
+            )
+            events_not_in_calendar = merge4.query("incal.isnull()")[
+                [
+                    "date_x",
+                    "level",
+                    "summary",
+                    "dateYear",
+                    "dateMonth",
+                    "dateDay",
+                    "miltime",
+                ]
+            ]
 
-    # Filter specific events
-    query_string = 'level==3 or summary.str.contains("Initial jobless claims") or summary.str.contains("GDP Growth Rate") or summary.str.contains("CPI") or summary.str.contains("Core PCE Price Index MoM") or summary.str.contains("New Home Sales MoM")'
-    df_merge_3 = df_csv_new.query(query_string, engine="python")
-    merge4 = df_merge_3.merge(
-        df_calendar, on=["dateYear", "dateMonth", "dateDay", "summary"], how="left"
-    )
-    events_not_in_calendar = merge4.query("incal.isnull()")[
-        [
-            "date_x",
-            "level",
-            "summary",
-            "dateYear",
-            "dateMonth",
-            "dateDay",
-            "miltime",
-        ]
-    ]
+            # Insert Events to Calendar
+            gcal.insertEventFromDict(events_not_in_calendar.to_dict("records"))
 
-    # Insert Events to Calendar
-    try:
-        gcal.insertEventFromDict(events_not_in_calendar.to_dict("records"))
-    except Exception as e:
-        print("Error occurred while inserting events:", e)
+            print("\nEvents Scraped:\t", df["date"].count())
+            print("Events in CSV (before):\t", df_csv["date"].count())
+            print("Events in CSV (after):\t", df_csv_new["date"].count())
+            print("Events in CSV (diff):\t", df_merge["date"].count())
+            print("Events in calendar:\t", df_calendar["date"].count())
+            print("Events in CSV (after)(filtered):\t", df_merge_3["date"].count())
+            print(
+                "Events in CSV (after)(filtered) added to calendar:\t",
+                events_not_in_calendar["dateDay"].count(),
+            )
+            
+            success = True
 
+        except Exception as e:
+            print("Error occurred with Google Calendar:", e)
 
-    print("\nEvents Scraped:\t", df["date"].count())
-    print("Events in CSV (before):\t", df_csv["date"].count())
-    print("Events in CSV (after):\t", df_csv_new["date"].count())
-    print("Events in CSV (diff):\t", df_merge["date"].count())
-    print("Events in calendar:\t", df_calendar["date"].count())
-    print("Events in CSV (after)(filtered):\t", df_merge_3["date"].count())
-    print(
-        "Events in CSV (after)(filtered) added to calendar:\t",
-        events_not_in_calendar["dateDay"].count(),
-    )
+            # delete current oauth file and retry
+            try: 
+                os.remove("./resources/oauth-token.json")
+                print("old oauth file has been deleted.")
+            except FileNotFoundError:
+                print("old oauth file was not found.")
+            except Exception as delete_error:
+                print(f"Error occured while trying to delete old oauth file: {delete_error}")
+            
+            retries += 1
+            if retries > max_retries:
+                print(f"Exceeded maximum retry limit of {max_retries}. Aborting.")
+
