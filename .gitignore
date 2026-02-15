@@ -1,7 +1,8 @@
-# Lib 
+# Lib
 Lib/*
 Scripts/*
 pyvenv.cfg
+.venv/
 
 __pycache__/*
 
@@ -25,6 +26,9 @@ MYREADME*
 # Python
 __pycache__/
 *.pyc
+
+# Logs
+*.log
 
 # Windows/WSL artifacts
 *:Zone.Identifier

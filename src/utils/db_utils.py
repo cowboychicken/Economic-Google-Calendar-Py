@@ -7,7 +7,7 @@ import time
 import numpy as np
 import datetime
 
-#load_dotenv()
+load_dotenv()
 
 
 class DatabaseConnection:
