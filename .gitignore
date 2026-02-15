@@ -18,3 +18,13 @@ Pipfile.lock
 
 MYREADME*
 
+# Environment / Secrets
+.env
+*serviceAccount.json
+
+# Python
+__pycache__/
+*.pyc
+
+# Windows/WSL artifacts
+*:Zone.Identifier

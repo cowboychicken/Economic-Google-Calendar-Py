@@ -112,6 +112,36 @@ def insertEventFromDict(events):
         )
         print("Event created: %s" % (event.get("htmlLink")), '\n')
 
+def create_gcal_event(event):
+    print(f"from [create_gcal_event()]")
+    
+    # Convert the Timestamp object to an ISO string
+    # .isoformat() is the most reliable way for Gcal
+    base_time = event["event_datetime"]
+
+    event_template = {
+        "summary": event["summary"],
+        "start": {
+            # This converts the timestamp to '2025-01-16T14:30:00'
+            "dateTime": base_time.strftime('%Y-%m-%dT%H:%M:00'),
+            "timeZone": "Etc/UTC",
+        },
+        "end": {
+            # This adds 5 minutes to the end time
+            "dateTime": base_time.strftime('%Y-%m-%dT%H:%M:05'),
+            "timeZone": "Etc/UTC",
+        },
+    }    
+
+    gcal_event = (
+            service.events()
+            .insert(calendarId=CALENDAR_ID, body=event_template)
+            .execute()
+    )
+    print("Event created: %s" % (gcal_event.get("htmlLink")))
+    print(f"Event id: {gcal_event.get('id')}")
+    return gcal_event.get('id')
+
 
 if __name__ == "__main__":
     main()
