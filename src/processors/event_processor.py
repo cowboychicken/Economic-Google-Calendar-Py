@@ -2,7 +2,6 @@
 
 import datetime
 import logging
-from typing import List
 
 import numpy as np
 import pandas as pd
@@ -19,7 +18,7 @@ class EventProcessor:
     def __init__(self, timezone: str = DEFAULT_TIMEZONE):
         self.timezone = pytz.timezone(timezone) if timezone != "UTC" else pytz.UTC
     
-    def raw_events_to_dataframe(self, raw_events: List[List[str]]) -> pd.DataFrame:
+    def raw_events_to_dataframe(self, raw_events: list[list[str]]) -> pd.DataFrame:
         """Convert raw scraped events to a pandas DataFrame.
         
         Args:

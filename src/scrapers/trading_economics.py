@@ -1,9 +1,8 @@
 """Trading Economics website scraper for economic calendar events."""
 
 import logging
-from typing import List, Optional, Tuple
+from typing import Optional
 
-import bs4
 import requests
 from bs4 import BeautifulSoup, Tag
 
@@ -43,7 +42,7 @@ class TradingEconomicsScraper:
             logger.error(f"Failed to scrape website: {e}")
             return None
     
-    def parse_event_row(self, row: Tag, current_date: str) -> List[str]:
+    def parse_event_row(self, row: Tag, current_date: str) -> list[str]:
         """Parse a single event row from the calendar table.
         
         Args:
@@ -88,7 +87,7 @@ class TradingEconomicsScraper:
             logger.warning(f"Failed to parse event row: {e}")
             return []
     
-    def parse_all_events(self, table: Tag) -> List[List[str]]:
+    def parse_all_events(self, table: Tag) -> list[list[str]]:
         """Parse all events from the calendar table.
         
         Args:
@@ -121,7 +120,7 @@ class TradingEconomicsScraper:
         logger.info(f"Successfully parsed {len(events_data)} events")
         return events_data
     
-    def scrape_events(self) -> List[List[str]]:
+    def scrape_events(self) -> list[list[str]]:
         """Main method to scrape and parse all events.
         
         Returns:

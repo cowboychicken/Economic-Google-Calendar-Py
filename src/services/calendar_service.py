@@ -1,7 +1,7 @@
 """Google Calendar service for managing economic event synchronization."""
 
 import logging
-from datetime import datetime, timedelta
+from datetime import timedelta
 from typing import Optional
 
 from google.auth.transport.requests import Request

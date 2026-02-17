@@ -1,7 +1,6 @@
 """Database service for managing economic events storage."""
 
 import logging
-from typing import Optional
 
 import pandas as pd
 from psycopg2.extras import execute_values

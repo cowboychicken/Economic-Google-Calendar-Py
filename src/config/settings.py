@@ -6,7 +6,6 @@ from pathlib import Path
 # Base paths
 BASE_DIR = Path(__file__).parent.parent.parent
 RESOURCES_DIR = BASE_DIR / "resources"
-CSV_FILE = RESOURCES_DIR / "economic-calendar-events.csv"
 
 # Trading Economics scraping configuration
 TRADING_ECONOMICS_URL = "https://tradingeconomics.com/united-states/calendar"
