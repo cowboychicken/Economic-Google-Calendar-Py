@@ -31,7 +31,7 @@ DATABASE_CONFIG = {
 
 # Event filtering configuration
 HIGH_IMPORTANCE_LEVEL = 3
-DEFAULT_TIMEZONE = "UTC"
+DEFAULT_TIMEZONE = "America/Chicago"
 
 # Database connection settings
 DB_MAX_RETRIES = 5

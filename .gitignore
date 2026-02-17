@@ -26,6 +26,8 @@ MYREADME*
 # Python
 __pycache__/
 *.pyc
+.mypy_cache/
+.pytest_cache/
 
 # Logs
 *.log

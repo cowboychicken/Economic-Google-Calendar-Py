@@ -112,12 +112,12 @@ class CalendarService:
                 "summary": summary,
                 "start": {
                     "dateTime": event_datetime.strftime('%Y-%m-%dT%H:%M:%S'),
-                    "timeZone": "UTC",
+                    "timeZone": "America/Chicago",
                 },
                 "end": {
                     # 5-minute events by default
                     "dateTime": (event_datetime + timedelta(minutes=5)).strftime('%Y-%m-%dT%H:%M:%S'),
-                    "timeZone": "UTC",
+                    "timeZone": "America/Chicago",
                 },
                 "description": f"Economic event from Trading Economics\\nImportance: Level {event_data.get('level', 'N/A')}"
             }

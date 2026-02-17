@@ -1,5 +1,5 @@
 # test_db.py
-from src.utils.db_utils import DatabaseConnection
+from utils.db_utils import DatabaseConnection
 
 
 

@@ -124,8 +124,8 @@ class EventProcessor:
                 df['parsed_date'].astype(str) + ' ' + df['parsed_time'].astype(str)
             )
             
-            # Convert to UTC timezone
-            df['event_datetime'] = df['event_datetime'].dt.tz_localize('US/Eastern').dt.tz_convert('UTC')
+            # Trading Economics times are already in UTC
+            df['event_datetime'] = df['event_datetime'].dt.tz_localize('UTC')
             
             # Clean up intermediate columns
             df = df.drop(['parsed_date', 'parsed_time'], axis=1)
